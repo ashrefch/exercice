@@ -1,8 +1,8 @@
-import React,{useRef,useState} from "react";
+import React,{useRef,useEffect,useState} from "react";
 import "./App.css";
 import {STLLoader} from "three/examples/jsm/loaders/STLLoader";
 import { Canvas,useLoader} from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { GizmoHelper,GizmoViewport, OrbitControls } from "@react-three/drei";
 
 
 function View(props){
@@ -10,6 +10,15 @@ function View(props){
   // Set up state for the hovered and active state
   const [hovered, setHover] = useState(false)
   const [active, setActive] = useState(false)
+ 
+const [geom,setGeom] = useState(null)
+  useEffect(() => {
+    const stlLoader = new STLLoader()
+    stlLoader.load('/assets/wheel.stl', geo => {
+      setGeom(geo)
+    
+    })
+  }, [])
 
   //const geom = useLoader(STLLoader,'./wheel.stl')
   // Rotate mesh every frame, this is outside of React without overhead
@@ -18,12 +27,16 @@ function View(props){
     <mesh
       {...props}
       ref={ref}
-      scale={active ? 1.5 : 1}
+      geometry={geom}
+      scale={1/10}
+      position={[0,0,-2]}
+      visible
       onClick={(e) => setActive(!active)}
       onPointerOver={(e) => setHover(true)}
       onPointerOut={(e) => setHover(false)}>
-      <boxGeometry args={[1,1,1]}  />
-      <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
+       <sphereGeometry/>
+      
+      <meshStandardMaterial color={hovered ? 'hotpink' : 'whitesmoke'} />
     </mesh>
   )
 }
@@ -32,7 +45,7 @@ export default function App(props) {
   return (
     <div className="App">
       <div id="canvas-container">
-        <Canvas camera={{ position: [12, 12, 16] }}>
+        <Canvas camera={{ position: [9, 9, 12] }} >
           <ambientLight intensity={0.4} />
           <meshStandardMaterial color="hotpink" transparent />
           
@@ -42,6 +55,11 @@ export default function App(props) {
 
           <gridHelper args={[100, 100]} />
           <axesHelper />
+          <GizmoHelper style={{ width: 100 }}
+           alignment="bottom-right" 
+           margin={[60, 110]} >
+       <GizmoViewport font="20px Helvetica Neue, Arial, sans-serif" axisColors={['#fc7e98', '#c0ec00', '#73c5ff']} labelColor="black" />
+       </GizmoHelper>
           <OrbitControls enableZoom="true" enableRotate="true" />
         </Canvas>
         
